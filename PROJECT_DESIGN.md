@@ -33,7 +33,8 @@ The endpoint is implemented in `src/services/dictionaryService.js` using the `ax
 - `BookOpeningScreen`: shows the five-second book-opening loading experience before the app enters the dictionary.
 - `SearchScreen`: accepts a word, validates input, shows autocomplete from history, requests the API, and navigates to details.
 - `WordDetailScreen`: displays the word, phonetic text, audio pronunciations, parts of speech, definitions, and examples.
-- `DrawerNavigator`: provides drawer navigation, theme switching, persistent search history, history replay, and clear history.
+- `DrawerNavigator`: provides drawer navigation, the Search tab, the Search History tab, theme switching, and clear history.
+- `HistoryScreen`: displays the full persistent search history and lets users search saved words again.
 
 ## Application Architecture
 
@@ -45,6 +46,7 @@ flowchart TD
   HistoryProvider --> BookLoading[BookOpeningScreen for 5 seconds]
   BookLoading --> Drawer[DrawerNavigator]
   Drawer --> Search[SearchScreen]
+  Drawer --> HistoryTab[HistoryScreen]
   Drawer --> Detail[WordDetailScreen]
   Search --> Service[dictionaryService.js]
   Drawer --> Service
@@ -53,6 +55,8 @@ flowchart TD
   Detail --> Audio[AudioPlayer]
   Search --> History[Persistent Search History Context]
   Drawer --> History
+  HistoryTab --> History
+  HistoryTab --> Service
   Detail --> History
   History --> Storage[Device localStorage via expo-sqlite]
 ```
@@ -90,6 +94,13 @@ Search input is validated in both `SearchScreen.js` and `dictionaryService.js`.
 - Multiple words or sentences show: `Please search for one word, not a sentence.`
 - Numbers show: `Please search for a word instead of numbers.`
 - Symbols show: `Please search for a word instead of numbers.`
+- Plain dictionary words such as `hello` are allowed.
+- Hyphenated dictionary words such as `mother-in-law` and `ice-cream` are allowed.
+- Apostrophe dictionary words such as `o'clock`, `can't`, and `rock'n'roll` are allowed.
+- Mixed word forms such as `jack-o'-lantern` are allowed.
+- Accented English loanwords such as `naïve` and `résumé` are allowed.
+- Dotted abbreviations such as `U.S.A.` are allowed.
+- Sentences and anything with spaces are rejected.
 - Words shorter than 2 characters are rejected.
 - Words longer than 50 characters are rejected.
 - API requests are only made after validation passes.
@@ -153,12 +164,13 @@ Implemented in `WordDetailScreen.js` and `AudioPlayer.js`.
 
 ### Activity 4: Drawer Navigation And Search History
 
-Implemented in `DrawerNavigator.js` and `SearchHistoryContext.js`.
+Implemented in `DrawerNavigator.js`, `HistoryScreen.js`, and `SearchHistoryContext.js`.
 
 - Drawer navigation wraps the app.
+- The drawer has a dedicated `Search History` tab.
 - Search history stores successful searched words and reloads them from device storage after app reloads.
 - Duplicate words are prevented by removing existing matches before adding the latest search.
-- History items appear in the drawer.
+- History items appear on the `Search History` drawer tab.
 - Tapping a history word triggers a fresh API request.
 - The word detail screen refreshes with the selected word data.
 - Clear History is available in the drawer.
@@ -188,6 +200,11 @@ Recommended manual test cases:
 - Multiple words, such as `good morning`.
 - Numbers, such as `word123`.
 - Symbols, such as `hello!`.
+- Hyphenated word, such as `mother-in-law`.
+- Apostrophe word, such as `o'clock`.
+- Mixed punctuation word, such as `jack-o'-lantern`.
+- Accented word, such as `résumé`.
+- Dotted abbreviation, such as `U.S.A.`.
 - Valid word with audio, such as `hello`.
 - Valid word with multiple meanings, such as `run`.
 - Word not found, such as `zzzznotaword`.

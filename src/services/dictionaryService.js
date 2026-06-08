@@ -21,9 +21,13 @@ export const VALIDATION_MESSAGES = {
   multipleWords: "Please search for one word, not a sentence.",
   numbers: "Please search for a word instead of numbers.",
   symbols: "Please search for a word instead of numbers.",
+  punctuation: "Please enter one English word without spaces, like hello, mother-in-law, or o'clock.",
   tooShort: "Please enter at least 2 characters",
   tooLong: "Please enter no more than 50 characters",
 };
+
+// This pattern accepts one word token, including common English forms like can't, mother-in-law, U.S.A, and naive/naïve.
+const WORD_TOKEN_PATTERN = /^\p{L}+(?:[-'’.‐‑–.]+\p{L}+)*\.?$/u;
 
 // This Axios client is configured once so every request uses the same base URL and timeout.
 const api = create({
@@ -55,8 +59,15 @@ export function validateSearchInput(value) {
     return VALIDATION_MESSAGES.numbers;
   }
 
-  // Searches containing symbols are rejected before contacting the API.
-  if (/[^A-Za-z]/.test(trimmed)) {
+  // Dictionary words can be plain letters, accented letters, hyphenated, apostrophe-based, or dotted abbreviations.
+  if (!WORD_TOKEN_PATTERN.test(trimmed)) {
+    if (/[-'’.‐‑–.]/u.test(trimmed)) {
+      return VALIDATION_MESSAGES.punctuation;
+    }
+  }
+
+  // Searches containing symbols outside normal word punctuation are rejected before contacting the API.
+  if (/[^\p{L}\-'’.‐‑–.]/u.test(trimmed)) {
     return VALIDATION_MESSAGES.symbols;
   }
 

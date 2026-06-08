@@ -171,7 +171,13 @@ export default function WordDetailScreen({ route }) {
                 </View>
                 <View style={styles.wordCopy}>
                   <Text style={styles.eyebrow}>Dictionary result</Text>
-                  <Text selectable style={styles.wordTitle}>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.68}
+                    numberOfLines={1}
+                    selectable
+                    style={styles.wordTitle}
+                  >
                     {word || "Unknown word"}
                   </Text>
                 </View>
@@ -291,21 +297,21 @@ function createStyles(colors) {
   headerTopRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 14,
+    gap: 10,
   },
   wordIcon: {
     alignItems: "center",
     backgroundColor: colors.glass,
     borderColor: "rgba(255,255,255,0.22)",
     borderWidth: 1,
-    borderRadius: 24,
-    height: 54,
+    borderRadius: 21,
+    height: 48,
     justifyContent: "center",
-    width: 54,
+    width: 48,
   },
   wordInitial: {
     color: "#FFFFFF",
-    fontSize: 24,
+    fontSize: 21,
     fontWeight: "900",
   },
   wordCopy: {
@@ -320,8 +326,9 @@ function createStyles(colors) {
   },
   wordTitle: {
     color: "#FFFFFF",
-    fontSize: 38,
+    fontSize: 34,
     fontWeight: "900",
+    lineHeight: 40,
     marginTop: 2,
     textTransform: "capitalize",
   },
@@ -329,11 +336,11 @@ function createStyles(colors) {
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.12)",
     borderColor: "rgba(255,255,255,0.16)",
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    height: 36,
+    height: 32,
     justifyContent: "center",
-    width: 36,
+    width: 32,
   },
   resultMetaRow: {
     alignItems: "center",

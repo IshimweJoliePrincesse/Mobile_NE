@@ -189,7 +189,7 @@ export default function SearchScreen({ navigation }) {
                 <Ionicons name="flash-outline" size={18} color={colors.gold} />
               </View>
             </View>
-            <Text style={styles.searchHint}>Search one word only. Letters only, 2 to 50 characters.</Text>
+            <Text style={styles.searchHint}>Search one English word only. No spaces or sentences.</Text>
             <View style={styles.searchRow}>
               <Ionicons name="search-outline" size={20} color={colors.muted} />
               <TextInput

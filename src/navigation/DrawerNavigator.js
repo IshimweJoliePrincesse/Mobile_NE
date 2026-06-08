@@ -1,8 +1,7 @@
-// This file creates the side drawer navigation. The drawer shows Search, search history, and Clear History.
-// These imports bring in React state, mobile UI elements, icons, navigation tools, screens, history, and API helpers.
-import React, { useState } from "react";
+// This file creates the side drawer navigation. The drawer shows Search, Search History, theme mode, and Clear History.
+// These imports bring in React, mobile UI elements, icons, navigation tools, screens, and shared history.
+import React from "react";
 import {
-  ActivityIndicator,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -18,50 +17,21 @@ import {
   createDrawerNavigator,
   DrawerContentScrollView,
 } from "@react-navigation/drawer";
-import ErrorMessage from "../components/ErrorMessage";
 import { useSearchHistory } from "../context/SearchHistoryContext";
 import { useTheme } from "../context/ThemeContext";
+import HistoryScreen from "../screens/HistoryScreen";
 import SearchScreen from "../screens/SearchScreen";
 import WordDetailScreen from "../screens/WordDetailScreen";
-import {
-  fetchWordDefinition,
-  getFriendlyErrorMessage,
-} from "../services/dictionaryService";
 
 // This creates the drawer navigation object used to register screens.
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
-  // These values let the drawer navigate, read history, clear history, and show loading/errors for history taps.
+  // These values let the drawer navigate, read history count, clear history, and switch theme mode.
   const { navigation } = props;
   const { colors, isDark, toggleTheme } = useTheme();
   const styles = createStyles(colors);
-  const { history, addSearch, clearHistory } = useSearchHistory();
-  const [loadingWord, setLoadingWord] = useState("");
-  const [error, setError] = useState("");
-  const [lastHistoryWord, setLastHistoryWord] = useState("");
-
-  // This function runs when a user taps a word in history. It fetches fresh data and opens the details screen.
-  const openHistoryWord = async (word) => {
-    try {
-      setError("");
-      setLoadingWord(word);
-      setLastHistoryWord(word);
-
-      // A history tap performs a new API request so the user sees up-to-date word details.
-      const data = await fetchWordDefinition(word);
-      addSearch(word);
-      navigation.closeDrawer();
-      navigation.navigate("WordDetail", {
-        word,
-        wordData: data,
-      });
-    } catch (requestError) {
-      setError(getFriendlyErrorMessage(requestError));
-    } finally {
-      setLoadingWord("");
-    }
-  };
+  const { history, clearHistory } = useSearchHistory();
 
   return (
     <SafeAreaView style={styles.drawerSafeArea}>
@@ -83,7 +53,7 @@ function CustomDrawerContent(props) {
         </View>
         <Text style={styles.drawerHeroTitle}>Your word library</Text>
         <Text style={styles.drawerHeroText}>
-          Recent searches stay here for quick lookup.
+          Open the Search History tab to view every saved word.
         </Text>
       </View>
 
@@ -104,50 +74,21 @@ function CustomDrawerContent(props) {
           <Text style={styles.homeText}>Search</Text>
         </Pressable>
 
-        {/* This label starts the search history section. */}
-        <Text style={styles.historyLabel}>Search History</Text>
-
-        {/* If no searches exist yet, show a friendly empty message instead of a blank drawer. */}
-        {history.length === 0 ? (
-          <View style={styles.drawerEmpty}>
-            <Ionicons name="time-outline" size={26} color={colors.drawerMuted} />
-            <Text style={styles.drawerEmptyText}>No searched words yet.</Text>
+        {/* This button opens the dedicated drawer tab where all search history lives. */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open search history"
+          onPress={() => navigation.navigate("SearchHistory")}
+          style={({ pressed }) => [styles.homeItem, pressed && styles.drawerPressed]}
+        >
+          <View style={styles.navIcon}>
+            <Ionicons name="time-outline" size={18} color={colors.primary} />
           </View>
-        ) : (
-          // Each history item can be tapped to search that word again.
-          history.map((word) => (
-            <Pressable
-              key={word}
-              accessibilityRole="button"
-              accessibilityLabel={`Search ${word}`}
-              onPress={() => openHistoryWord(word)}
-              disabled={Boolean(loadingWord)}
-              style={({ pressed }) => [
-                styles.historyItem,
-                pressed && styles.drawerPressed,
-              ]}
-            >
-              <View style={styles.historyIcon}>
-                <Text style={styles.historyInitial}>{word.slice(0, 1).toUpperCase()}</Text>
-              </View>
-              <Text style={styles.historyText}>{word}</Text>
-              {loadingWord === word ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-              <Ionicons name="chevron-forward" size={18} color={colors.drawerMuted} />
-              )}
-            </Pressable>
-          ))
-        )}
-
-        {/* If a history search fails, show the error and let the user retry that word. */}
-        {error ? (
-          <ErrorMessage
-            compact
-            message={error}
-            onRetry={() => openHistoryWord(lastHistoryWord)}
-          />
-        ) : null}
+          <Text style={styles.homeText}>Search History</Text>
+          <View style={styles.countBadge}>
+            <Text style={styles.countBadgeText}>{history.length}</Text>
+          </View>
+        </Pressable>
       </DrawerContentScrollView>
 
       {/* This footer contains the Clear History button at the bottom of the drawer. */}
@@ -210,6 +151,15 @@ export default function DrawerNavigator() {
             options={{
               title: "Dictionary",
               drawerLabel: "Search",
+            }}
+          />
+          {/* This drawer tab stores and displays every successful searched word. */}
+          <Drawer.Screen
+            name="SearchHistory"
+            component={HistoryScreen}
+            options={{
+              title: "Search History",
+              drawerLabel: "Search History",
             }}
           />
           {/* This screen is hidden from the drawer list because users reach it after searching. */}
@@ -349,64 +299,22 @@ function createStyles(colors) {
   },
   homeText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  historyLabel: {
-    color: colors.softText,
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-    marginBottom: 8,
-    marginHorizontal: 18,
-    textTransform: "uppercase",
-  },
-  drawerEmpty: {
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 18,
-    marginHorizontal: 12,
-    paddingHorizontal: 28,
-    paddingVertical: 26,
-  },
-  drawerEmptyText: {
-    color: colors.drawerMuted,
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: "center",
-  },
-  historyItem: {
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderColor: "rgba(255,255,255,0.08)",
-    borderRadius: 18,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    marginHorizontal: 12,
-    marginVertical: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  historyIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 15,
-    height: 32,
-    justifyContent: "center",
-    width: 32,
-  },
-  historyInitial: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900",
-  },
-  historyText: {
-    color: "#FFFFFF",
     flex: 1,
     fontSize: 16,
-    textTransform: "capitalize",
+    fontWeight: "700",
+  },
+  countBadge: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    minWidth: 28,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  countBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
   },
   drawerFooter: {
     borderTopColor: "rgba(255,255,255,0.12)",
