@@ -33,7 +33,7 @@ The endpoint is implemented in `src/services/dictionaryService.js` using the `ax
 - `BookOpeningScreen`: shows the five-second book-opening loading experience before the app enters the dictionary.
 - `SearchScreen`: accepts a word, validates input, shows autocomplete from history, requests the API, and navigates to details.
 - `WordDetailScreen`: displays the word, phonetic text, audio pronunciations, parts of speech, definitions, and examples.
-- `DrawerNavigator`: provides drawer navigation, theme switching, search history, history replay, and clear history.
+- `DrawerNavigator`: provides drawer navigation, theme switching, persistent search history, history replay, and clear history.
 
 ## Application Architecture
 
@@ -51,9 +51,10 @@ flowchart TD
   Detail --> Service
   Service --> API[Free Dictionary API]
   Detail --> Audio[AudioPlayer]
-  Search --> History[Search History Context]
+  Search --> History[Persistent Search History Context]
   Drawer --> History
   Detail --> History
+  History --> Storage[Device localStorage via expo-sqlite]
 ```
 
 ## Data Flow Diagram
@@ -155,7 +156,7 @@ Implemented in `WordDetailScreen.js` and `AudioPlayer.js`.
 Implemented in `DrawerNavigator.js` and `SearchHistoryContext.js`.
 
 - Drawer navigation wraps the app.
-- Search history stores successful searched words.
+- Search history stores successful searched words and reloads them from device storage after app reloads.
 - Duplicate words are prevented by removing existing matches before adding the latest search.
 - History items appear in the drawer.
 - Tapping a history word triggers a fresh API request.
