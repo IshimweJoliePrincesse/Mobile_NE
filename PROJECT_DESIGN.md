@@ -94,6 +94,7 @@ Search input is validated in both `SearchScreen.js` and `dictionaryService.js`.
 - Multiple words or sentences show: `Please search for one word, not a sentence.`
 - Numbers show: `Please search for a word instead of numbers.`
 - Symbols show: `Please search for a word instead of numbers.`
+- Single-letter dictionary words such as `a` and `I` are allowed.
 - Plain dictionary words such as `hello` are allowed.
 - Hyphenated dictionary words such as `mother-in-law` and `ice-cream` are allowed.
 - Apostrophe dictionary words such as `o'clock`, `can't`, and `rock'n'roll` are allowed.
@@ -101,7 +102,6 @@ Search input is validated in both `SearchScreen.js` and `dictionaryService.js`.
 - Accented English loanwords such as `naïve` and `résumé` are allowed.
 - Dotted abbreviations such as `U.S.A.` are allowed.
 - Sentences and anything with spaces are rejected.
-- Words shorter than 2 characters are rejected.
 - Words longer than 50 characters are rejected.
 - API requests are only made after validation passes.
 

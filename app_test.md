@@ -16,6 +16,8 @@ These inputs should be accepted as one English word:
 
 | Input | Expected Result |
 | --- | --- |
+| `a` | Search runs |
+| `I` | Search runs |
 | `hello` | Search runs |
 | `dictionary` | Search runs |
 | `mother-in-law` | Search runs |

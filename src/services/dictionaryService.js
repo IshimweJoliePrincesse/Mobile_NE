@@ -22,7 +22,6 @@ export const VALIDATION_MESSAGES = {
   numbers: "Please search for a word instead of numbers.",
   symbols: "Please search for a word instead of numbers.",
   punctuation: "Please enter one English word without spaces, like hello, mother-in-law, or o'clock.",
-  tooShort: "Please enter at least 2 characters",
   tooLong: "Please enter no more than 50 characters",
 };
 
@@ -69,11 +68,6 @@ export function validateSearchInput(value) {
   // Searches containing symbols outside normal word punctuation are rejected before contacting the API.
   if (/[^\p{L}\-'’.‐‑–.]/u.test(trimmed)) {
     return VALIDATION_MESSAGES.symbols;
-  }
-
-  // Very short words are rejected by the assignment rules.
-  if (trimmed.length < 2) {
-    return VALIDATION_MESSAGES.tooShort;
   }
 
   // Very long searches are rejected to prevent unreasonable API requests.
