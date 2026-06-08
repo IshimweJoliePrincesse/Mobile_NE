@@ -1,4 +1,5 @@
-// This screen displays the selected word, pronunciation, meanings, definitions, and examples.
+// This screen displays one searched word. It shows the word, phonetic spelling, audio pronunciations, meanings, definitions, and examples.
+// These imports bring in React, layout components, reusable cards, audio controls, history access, and dictionary API helpers.
 import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import AudioPlayer from "../components/AudioPlayer";
@@ -6,6 +7,7 @@ import DefinitionCard from "../components/DefinitionCard";
 import ErrorMessage from "../components/ErrorMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useSearchHistory } from "../context/SearchHistoryContext";
+import { useTheme } from "../context/ThemeContext";
 import {
   ERROR_MESSAGES,
   fetchWordDefinition,
@@ -13,16 +15,8 @@ import {
   normalizeSearchWord,
 } from "../services/dictionaryService";
 
-const COLORS = {
-  primary: "#2D6BE4",
-  secondary: "#1A1A2E",
-  background: "#F0F4FF",
-  card: "#FFFFFF",
-  text: "#1C1C1E",
-  muted: "#6B7280",
-  softBlue: "#EAF1FF",
-};
-
+// These colors keep the word details page visually consistent with the rest of the app.
+// This helper chooses the best phonetic text to show near the top of the screen.
 function findPhoneticText(entries) {
   const entryWithText = entries.find((entry) => entry?.phonetic);
   const phoneticWithText = entries
@@ -32,10 +26,12 @@ function findPhoneticText(entries) {
   return entryWithText?.phonetic || phoneticWithText?.text || "No phonetic spelling available";
 }
 
+// This helper checks that an audio link is safe to use before showing audio buttons.
 function isValidAudioUrl(audioUrl) {
   return typeof audioUrl === "string" && /^https?:\/\//i.test(audioUrl);
 }
 
+// This helper names each pronunciation, such as UK or US, by looking at the audio file URL returned by the API.
 function getPronunciationLabel(phonetic, fallbackIndex) {
   const audioUrl = String(phonetic?.audio || "").toLowerCase();
 
@@ -54,6 +50,7 @@ function getPronunciationLabel(phonetic, fallbackIndex) {
   return `Pronunciation ${fallbackIndex}`;
 }
 
+// This helper collects all playable pronunciation audio files, removes duplicates, and sorts common accents first.
 function getAudioPronunciations(entries) {
   const phonetics = entries.flatMap((entry) => entry?.phonetics || []);
   const usedAudioUrls = new Set();
@@ -61,6 +58,7 @@ function getAudioPronunciations(entries) {
   const pronunciations = [];
 
   phonetics.forEach((phonetic) => {
+    // Skip missing, invalid, or repeated audio links so users do not see broken duplicate buttons.
     if (!isValidAudioUrl(phonetic?.audio) || usedAudioUrls.has(phonetic.audio)) {
       return;
     }
@@ -68,6 +66,7 @@ function getAudioPronunciations(entries) {
     const label = getPronunciationLabel(phonetic, pronunciations.length + 1);
     const isRegionalLabel = label.includes("UK") || label.includes("US") || label.includes("AU");
 
+    // If the API gives more than one file for the same region, keep only the first one for that region.
     if (isRegionalLabel && usedLabels.has(label)) {
       return;
     }
@@ -92,11 +91,16 @@ function getAudioPronunciations(entries) {
   });
 }
 
+// This helper gathers meanings from all API entries into one simple list for rendering.
 function flattenMeanings(entries) {
   return entries.flatMap((entry) => (Array.isArray(entry?.meanings) ? entry.meanings : []));
 }
 
 export default function WordDetailScreen({ route }) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
+  // These initial values come from the search screen or drawer history when this screen is opened.
   const initialWordData = Array.isArray(route?.params?.wordData) ? route.params.wordData : [];
   const initialWord = normalizeSearchWord(route?.params?.word || initialWordData?.[0]?.word);
   const [wordData, setWordData] = useState(initialWordData);
@@ -106,6 +110,7 @@ export default function WordDetailScreen({ route }) {
   const [audioError, setAudioError] = useState("");
   const { addSearch } = useSearchHistory();
 
+  // This effect refreshes the details when the user searches a different word while this screen is already open.
   useEffect(() => {
     const nextWordData = Array.isArray(route?.params?.wordData) ? route.params.wordData : [];
     const nextWord = normalizeSearchWord(route?.params?.word || nextWordData?.[0]?.word);
@@ -116,11 +121,13 @@ export default function WordDetailScreen({ route }) {
     setError(nextWordData.length ? "" : ERROR_MESSAGES.empty);
   }, [route?.params?.word, route?.params?.wordData]);
 
+  // These calculated values prepare the exact text, audio list, and meanings that will be shown in the UI.
   const word = normalizeSearchWord(wordData?.[0]?.word || requestedWord);
   const phonetic = useMemo(() => findPhoneticText(wordData), [wordData]);
   const audioPronunciations = useMemo(() => getAudioPronunciations(wordData), [wordData]);
   const meanings = useMemo(() => flattenMeanings(wordData), [wordData]);
 
+  // This function repeats the last dictionary request when the user presses Retry after an error.
   const retrySearch = async () => {
     if (!word) {
       setError(ERROR_MESSAGES.empty);
@@ -128,6 +135,7 @@ export default function WordDetailScreen({ route }) {
     }
 
     try {
+      // Loading is shown while the app refreshes this word from the API.
       setLoading(true);
       setError("");
       const data = await fetchWordDefinition(word);
@@ -144,12 +152,15 @@ export default function WordDetailScreen({ route }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* This appears while the app is refreshing word details from the API. */}
         {loading ? <LoadingSpinner message="Refreshing word..." /> : null}
 
+        {/* This appears if the details cannot be loaded and gives the user a Retry button. */}
         {!loading && error ? <ErrorMessage message={error} onRetry={retrySearch} /> : null}
 
         {!loading && !error ? (
           <>
+            {/* This top card shows the selected word, phonetic spelling, and available pronunciation controls. */}
             <View style={styles.headerCard}>
               <View style={styles.headerTopRow}>
                 <View style={styles.wordIcon}>
@@ -166,6 +177,7 @@ export default function WordDetailScreen({ route }) {
                 <Text selectable style={styles.phonetic}>
                   {phonetic}
                 </Text>
+                {/* If audio exists, each available pronunciation gets its own Play, Pause, and Stop controls. */}
                 {audioPronunciations.length ? (
                   <View style={styles.pronunciationList}>
                     {audioPronunciations.map((pronunciation) => (
@@ -187,6 +199,7 @@ export default function WordDetailScreen({ route }) {
               {audioError ? <Text style={styles.audioError}>{audioError}</Text> : null}
             </View>
 
+            {/* This section lists all meanings. Each meaning is numbered from 1 to the total number of meanings. */}
             {meanings.length ? (
               <>
                 <View style={styles.sectionHeader}>
@@ -212,9 +225,11 @@ export default function WordDetailScreen({ route }) {
   );
 }
 
-const styles = StyleSheet.create({
+// These styles control the word detail page layout, including the header card, pronunciation cards, and meaning section.
+function createStyles(colors) {
+  return StyleSheet.create({
   safeArea: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     flex: 1,
   },
   scrollContent: {
@@ -222,12 +237,12 @@ const styles = StyleSheet.create({
     paddingBottom: 34,
   },
   headerCard: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: colors.secondary,
     borderRadius: 28,
     elevation: 5,
     marginBottom: 20,
     padding: 22,
-    shadowColor: COLORS.secondary,
+    shadowColor: colors.secondary,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 18,
@@ -239,14 +254,14 @@ const styles = StyleSheet.create({
   },
   wordIcon: {
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderRadius: 24,
     height: 54,
     justifyContent: "center",
     width: 54,
   },
   wordInitial: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 24,
     fontWeight: "900",
   },
@@ -254,14 +269,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eyebrow: {
-    color: "#BFD3FF",
+    color: colors.softText,
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   wordTitle: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 34,
     fontWeight: "900",
     marginTop: 2,
@@ -277,7 +292,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   phonetic: {
-    color: "#E6EEFF",
+    color: colors.heroText,
     fontSize: 16,
     fontStyle: "italic",
   },
@@ -297,17 +312,17 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   pronunciationLabel: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "900",
   },
   pronunciationText: {
-    color: "#BFD3FF",
+    color: colors.softText,
     fontSize: 13,
     fontStyle: "italic",
   },
   audioError: {
-    color: "#EF4444",
+    color: colors.error,
     fontSize: 13,
     marginTop: 10,
   },
@@ -319,18 +334,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    color: COLORS.secondary,
+    color: colors.text,
     fontSize: 20,
     fontWeight: "900",
   },
   sectionMeta: {
-    backgroundColor: COLORS.softBlue,
+    backgroundColor: colors.softBlue,
     borderRadius: 12,
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 12,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-});
+  });
+}

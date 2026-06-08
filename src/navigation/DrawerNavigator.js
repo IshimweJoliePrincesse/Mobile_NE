@@ -1,4 +1,5 @@
-// This navigator wraps the app in a drawer and renders searchable history inside the drawer panel.
+// This file creates the side drawer navigation. The drawer shows Search, search history, and Clear History.
+// These imports bring in React state, mobile UI elements, icons, navigation tools, screens, history, and API helpers.
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,6 +20,7 @@ import {
 } from "@react-navigation/drawer";
 import ErrorMessage from "../components/ErrorMessage";
 import { useSearchHistory } from "../context/SearchHistoryContext";
+import { useTheme } from "../context/ThemeContext";
 import SearchScreen from "../screens/SearchScreen";
 import WordDetailScreen from "../screens/WordDetailScreen";
 import {
@@ -26,31 +28,27 @@ import {
   getFriendlyErrorMessage,
 } from "../services/dictionaryService";
 
+// This creates the drawer navigation object used to register screens.
 const Drawer = createDrawerNavigator();
 
-const COLORS = {
-  primary: "#2D6BE4",
-  secondary: "#1A1A2E",
-  background: "#F0F4FF",
-  card: "#FFFFFF",
-  muted: "#6B7280",
-  error: "#EF4444",
-  softText: "#C7D2FE",
-};
-
 function CustomDrawerContent(props) {
+  // These values let the drawer navigate, read history, clear history, and show loading/errors for history taps.
   const { navigation } = props;
+  const { colors, isDark, toggleTheme } = useTheme();
+  const styles = createStyles(colors);
   const { history, addSearch, clearHistory } = useSearchHistory();
   const [loadingWord, setLoadingWord] = useState("");
   const [error, setError] = useState("");
   const [lastHistoryWord, setLastHistoryWord] = useState("");
 
+  // This function runs when a user taps a word in history. It fetches fresh data and opens the details screen.
   const openHistoryWord = async (word) => {
     try {
       setError("");
       setLoadingWord(word);
       setLastHistoryWord(word);
 
+      // A history tap performs a new API request so the user sees up-to-date word details.
       const data = await fetchWordDefinition(word);
       addSearch(word);
       navigation.closeDrawer();
@@ -67,24 +65,29 @@ function CustomDrawerContent(props) {
 
   return (
     <SafeAreaView style={styles.drawerSafeArea}>
+      {/* This top drawer area displays the app identity. */}
       <View style={styles.drawerHeader}>
         <View style={styles.logo}>
-          <Ionicons name="book" size={28} color={COLORS.card} />
+          <Ionicons name="book" size={28} color="#FFFFFF" />
         </View>
         <View>
           <Text style={styles.drawerTitle}>Dictionary</Text>
           <Text style={styles.drawerSubtitle}>LexiTech Solutions Ltd</Text>
         </View>
       </View>
+      {/* This small drawer card explains what the search history section is for. */}
       <View style={styles.drawerHero}>
         <Text style={styles.drawerHeroTitle}>Your word library</Text>
-        <Text style={styles.drawerHeroText}>Recent searches stay here for quick lookup.</Text>
+        <Text style={styles.drawerHeroText}>
+          Recent searches stay here for quick lookup.
+        </Text>
       </View>
 
       <DrawerContentScrollView
         {...props}
         contentContainerStyle={styles.drawerScrollContent}
       >
+        {/* This button takes the user back to the main Search screen. */}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Open search"
@@ -92,19 +95,22 @@ function CustomDrawerContent(props) {
           style={({ pressed }) => [styles.homeItem, pressed && styles.drawerPressed]}
         >
           <View style={styles.navIcon}>
-            <Ionicons name="search-outline" size={18} color={COLORS.primary} />
+            <Ionicons name="search-outline" size={18} color={colors.primary} />
           </View>
           <Text style={styles.homeText}>Search</Text>
         </Pressable>
 
+        {/* This label starts the search history section. */}
         <Text style={styles.historyLabel}>Search History</Text>
 
+        {/* If no searches exist yet, show a friendly empty message instead of a blank drawer. */}
         {history.length === 0 ? (
           <View style={styles.drawerEmpty}>
-            <Ionicons name="time-outline" size={26} color={COLORS.muted} />
+            <Ionicons name="time-outline" size={26} color={colors.drawerMuted} />
             <Text style={styles.drawerEmptyText}>No searched words yet.</Text>
           </View>
         ) : (
+          // Each history item can be tapped to search that word again.
           history.map((word) => (
             <Pressable
               key={word}
@@ -122,14 +128,15 @@ function CustomDrawerContent(props) {
               </View>
               <Text style={styles.historyText}>{word}</Text>
               {loadingWord === word ? (
-                <ActivityIndicator color={COLORS.card} size="small" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <Ionicons name="chevron-forward" size={18} color={COLORS.muted} />
+              <Ionicons name="chevron-forward" size={18} color={colors.drawerMuted} />
               )}
             </Pressable>
           ))
         )}
 
+        {/* If a history search fails, show the error and let the user retry that word. */}
         {error ? (
           <ErrorMessage
             compact
@@ -139,7 +146,22 @@ function CustomDrawerContent(props) {
         ) : null}
       </DrawerContentScrollView>
 
+      {/* This footer contains the Clear History button at the bottom of the drawer. */}
       <View style={styles.drawerFooter}>
+        {/* This button switches the app between light mode and dark mode. */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Toggle light and dark mode"
+          onPress={toggleTheme}
+          style={({ pressed }) => [styles.themeButton, pressed && styles.drawerPressed]}
+        >
+          <Ionicons
+            name={isDark ? "sunny-outline" : "moon-outline"}
+            size={18}
+            color="#FFFFFF"
+          />
+          <Text style={styles.themeText}>{isDark ? "Light Mode" : "Dark Mode"}</Text>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Clear search history"
@@ -151,7 +173,7 @@ function CustomDrawerContent(props) {
             pressed && styles.drawerPressed,
           ]}
         >
-          <Ionicons name="trash-outline" size={18} color={COLORS.error} />
+          <Ionicons name="trash-outline" size={18} color={colors.error} />
           <Text style={styles.clearText}>Clear History</Text>
         </Pressable>
       </View>
@@ -159,7 +181,11 @@ function CustomDrawerContent(props) {
   );
 }
 
+// This component connects the Search screen and Word Detail screen inside a drawer navigator.
 export default function DrawerNavigator() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <NavigationIndependentTree>
       <NavigationContainer>
@@ -168,11 +194,12 @@ export default function DrawerNavigator() {
           screenOptions={{
             drawerStyle: styles.drawer,
             headerStyle: styles.header,
-            headerTintColor: COLORS.secondary,
+            headerTintColor: colors.text,
             headerTitleStyle: styles.headerTitle,
             sceneContainerStyle: styles.scene,
           }}
         >
+          {/* This is the main screen where users type words. */}
           <Drawer.Screen
             name="Search"
             component={SearchScreen}
@@ -181,6 +208,7 @@ export default function DrawerNavigator() {
               drawerLabel: "Search",
             }}
           />
+          {/* This screen is hidden from the drawer list because users reach it after searching. */}
           <Drawer.Screen
             name="WordDetail"
             component={WordDetailScreen}
@@ -195,25 +223,27 @@ export default function DrawerNavigator() {
   );
 }
 
-const styles = StyleSheet.create({
+// These styles control drawer colors, spacing, row layout, and the app header appearance.
+function createStyles(colors) {
+  return StyleSheet.create({
   scene: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     elevation: 0,
     shadowOpacity: 0,
   },
   headerTitle: {
-    color: COLORS.secondary,
+    color: colors.text,
     fontWeight: "800",
   },
   drawer: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: colors.secondary,
     width: 300,
   },
   drawerSafeArea: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: colors.secondary,
     flex: 1,
   },
   drawerHeader: {
@@ -226,19 +256,19 @@ const styles = StyleSheet.create({
   },
   logo: {
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderRadius: 22,
     height: 44,
     justifyContent: "center",
     width: 44,
   },
   drawerTitle: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 24,
     fontWeight: "800",
   },
   drawerSubtitle: {
-    color: COLORS.softText,
+    color: colors.softText,
     fontSize: 12,
     marginTop: 2,
   },
@@ -252,12 +282,12 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   drawerHeroTitle: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "900",
   },
   drawerHeroText: {
-    color: COLORS.softText,
+    color: colors.softText,
     fontSize: 13,
     lineHeight: 19,
     marginTop: 4,
@@ -267,7 +297,7 @@ const styles = StyleSheet.create({
   },
   homeItem: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.12)",
     borderRadius: 16,
     flexDirection: "row",
     gap: 10,
@@ -278,19 +308,19 @@ const styles = StyleSheet.create({
   },
   navIcon: {
     alignItems: "center",
-    backgroundColor: COLORS.card,
+    backgroundColor: "#FFFFFF",
     borderRadius: 14,
     height: 30,
     justifyContent: "center",
     width: 30,
   },
   homeText: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
   },
   historyLabel: {
-    color: COLORS.softText,
+    color: colors.softText,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 0.6,
@@ -304,14 +334,14 @@ const styles = StyleSheet.create({
     paddingVertical: 26,
   },
   drawerEmptyText: {
-    color: COLORS.muted,
+    color: colors.drawerMuted,
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",
   },
   historyItem: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "rgba(255,255,255,0.12)",
     borderRadius: 16,
     flexDirection: "row",
     gap: 10,
@@ -323,19 +353,19 @@ const styles = StyleSheet.create({
   },
   historyIcon: {
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderRadius: 14,
     height: 30,
     justifyContent: "center",
     width: 30,
   },
   historyInitial: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "900",
   },
   historyText: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     flex: 1,
     fontSize: 16,
     textTransform: "capitalize",
@@ -347,7 +377,7 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     alignItems: "center",
-    borderColor: COLORS.error,
+    borderColor: colors.error,
     borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
@@ -359,11 +389,27 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   clearText: {
-    color: COLORS.error,
+    color: colors.error,
     fontSize: 15,
     fontWeight: "700",
   },
   drawerPressed: {
     backgroundColor: "rgba(45,107,228,0.18)",
   },
-});
+  themeButton: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+    marginBottom: 10,
+    paddingVertical: 12,
+  },
+  themeText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  });
+}

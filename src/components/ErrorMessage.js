@@ -1,26 +1,28 @@
-// This component displays validation and API errors with an optional retry action.
+// This component shows a clear error message and, when possible, a Retry button.
+// These imports provide React, basic UI elements, and an alert icon.
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-const COLORS = {
-  primary: "#2D6BE4",
-  error: "#EF4444",
-  card: "#FFFFFF",
-  text: "#1C1C1E",
-};
+import { useTheme } from "../context/ThemeContext";
 
 export default function ErrorMessage({ message, onRetry, compact = false }) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
+  // If there is no error message, the component shows nothing.
   if (!message) {
     return null;
   }
 
   return (
     <View style={[styles.container, compact && styles.compactContainer]}>
-      <Ionicons name="alert-circle-outline" size={compact ? 22 : 34} color={COLORS.error} />
+      {/* This icon visually warns the user that something went wrong. */}
+      <Ionicons name="alert-circle-outline" size={compact ? 22 : 34} color={colors.error} />
+      {/* The message is selectable so users can copy it if they need help. */}
       <Text selectable style={[styles.message, compact && styles.compactMessage]}>
         {message}
       </Text>
+      {/* The Retry button appears only when the screen provides a retry function. */}
       {onRetry ? (
         <Pressable
           accessibilityRole="button"
@@ -35,10 +37,12 @@ export default function ErrorMessage({ message, onRetry, compact = false }) {
   );
 }
 
-const styles = StyleSheet.create({
+// These styles control the error box, compact drawer version, and retry button.
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     alignItems: "center",
-    backgroundColor: COLORS.card,
+    backgroundColor: colors.card,
     borderRadius: 16,
     marginTop: 16,
     padding: 18,
@@ -49,7 +53,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   message: {
-    color: COLORS.text,
+    color: colors.text,
     fontSize: 15,
     lineHeight: 22,
     marginTop: 8,
@@ -60,18 +64,19 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   retryButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderRadius: 24,
     marginTop: 14,
     paddingHorizontal: 18,
     paddingVertical: 10,
   },
   retryText: {
-    color: COLORS.card,
+    color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "700",
   },
   pressed: {
     opacity: 0.75,
   },
-});
+  });
+}
