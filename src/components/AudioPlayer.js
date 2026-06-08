@@ -1,6 +1,6 @@
 // This component validates pronunciation URLs and controls repeatable play, pause, and stop actions.
 import React, { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, ToastAndroid, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, ToastAndroid, View } from "react-native";
 import { Audio } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -56,8 +56,8 @@ export default function AudioPlayer({ audioUrl, onError }) {
     onError?.("Unable to play pronunciation.");
   };
 
-  const isPlaying = playbackState === PLAYBACK_STATES.playing;
   const canStop = Boolean(sound) && playbackState !== PLAYBACK_STATES.stopped;
+  const canPause = playbackState === PLAYBACK_STATES.playing;
 
   const stopAudio = async () => {
     try {
@@ -79,16 +79,27 @@ export default function AudioPlayer({ audioUrl, onError }) {
     }
   };
 
+  const pauseAudio = async () => {
+    try {
+      if (!sound || !canPause) {
+        return;
+      }
+
+      const status = await sound.getStatusAsync();
+
+      if (status.isLoaded && status.isPlaying) {
+        await sound.pauseAsync();
+        setPlaybackState(PLAYBACK_STATES.paused);
+      }
+    } catch (_error) {
+      handlePlaybackError();
+    }
+  };
+
   const playAudio = async () => {
     try {
       if (sound && loadedUrl === audioUrl) {
         const status = await sound.getStatusAsync();
-
-        if (status.isLoaded && status.isPlaying) {
-          await sound.pauseAsync();
-          setPlaybackState(PLAYBACK_STATES.paused);
-          return;
-        }
 
         if (status.isLoaded && playbackState === PLAYBACK_STATES.stopped) {
           await sound.setPositionAsync(0);
@@ -135,15 +146,32 @@ export default function AudioPlayer({ audioUrl, onError }) {
     <View style={styles.controls}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={isPlaying ? "Pause pronunciation" : "Play pronunciation"}
+        accessibilityLabel="Play pronunciation"
         onPress={playAudio}
         style={({ pressed }) => [
           styles.button,
-          isPlaying && styles.playing,
+          styles.playButton,
           pressed && styles.pressed,
         ]}
       >
-        <Ionicons name={isPlaying ? "pause" : "volume-high"} size={22} color={COLORS.white} />
+        <Ionicons name="play" size={17} color={COLORS.white} />
+        <Text style={styles.buttonText}>Play</Text>
+      </Pressable>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Pause pronunciation"
+        onPress={pauseAudio}
+        disabled={!canPause}
+        style={({ pressed }) => [
+          styles.button,
+          styles.pauseButton,
+          !canPause && styles.disabled,
+          pressed && styles.pressed,
+        ]}
+      >
+        <Ionicons name="pause" size={17} color={COLORS.white} />
+        <Text style={styles.buttonText}>Pause</Text>
       </Pressable>
 
       <Pressable
@@ -159,6 +187,7 @@ export default function AudioPlayer({ audioUrl, onError }) {
         ]}
       >
         <Ionicons name="stop" size={18} color={COLORS.white} />
+        <Text style={styles.buttonText}>Stop</Text>
       </Pressable>
     </View>
   );
@@ -168,25 +197,35 @@ const styles = StyleSheet.create({
   controls: {
     alignItems: "center",
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   button: {
     alignItems: "center",
     backgroundColor: COLORS.primary,
-    borderRadius: 22,
-    height: 44,
+    borderRadius: 20,
+    flexDirection: "row",
+    gap: 4,
+    height: 40,
     justifyContent: "center",
-    width: 44,
+    paddingHorizontal: 9,
   },
-  playing: {
+  playButton: {
+    backgroundColor: COLORS.primary,
+  },
+  pauseButton: {
     backgroundColor: COLORS.success,
   },
   stopButton: {
-    height: 38,
-    width: 38,
+    backgroundColor: "#EF4444",
   },
   disabled: {
     opacity: 0.45,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 11,
+    fontWeight: "700",
   },
   pressed: {
     opacity: 0.75,

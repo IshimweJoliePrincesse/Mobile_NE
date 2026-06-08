@@ -30,6 +30,7 @@ const COLORS = {
   text: "#1C1C1E",
   muted: "#6B7280",
   error: "#EF4444",
+  softBlue: "#EAF1FF",
 };
 
 export default function SearchScreen({ navigation }) {
@@ -91,18 +92,40 @@ export default function SearchScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}
         >
-          <View style={styles.hero}>
-            <View style={styles.heroIcon}>
-              <Ionicons name="book-outline" size={34} color={COLORS.primary} />
+          <View style={styles.heroCard}>
+            <View style={styles.heroTopRow}>
+              <View style={styles.heroIcon}>
+                <Ionicons name="book-outline" size={34} color={COLORS.card} />
+              </View>
+              <View style={styles.brandCopy}>
+                <Text style={styles.brandLabel}>LexiTech Solutions Ltd</Text>
+                <Text style={styles.title}>Dictionary</Text>
+              </View>
             </View>
-            <Text style={styles.title}>Dictionary</Text>
             <Text style={styles.subtitle}>
               Search English words, read definitions, and listen to pronunciations.
             </Text>
+            <View style={styles.featureRow}>
+              <View style={styles.featurePill}>
+                <Ionicons name="text-outline" size={15} color={COLORS.primary} />
+                <Text style={styles.featureText}>Definitions</Text>
+              </View>
+              <View style={styles.featurePill}>
+                <Ionicons name="volume-high-outline" size={15} color={COLORS.primary} />
+                <Text style={styles.featureText}>Audio</Text>
+              </View>
+              <View style={styles.featurePill}>
+                <Ionicons name="time-outline" size={15} color={COLORS.primary} />
+                <Text style={styles.featureText}>History</Text>
+              </View>
+            </View>
           </View>
 
           <View style={styles.searchCard}>
+            <Text style={styles.searchTitle}>Find a word</Text>
+            <Text style={styles.searchHint}>Use letters only, between 2 and 50 characters.</Text>
             <View style={styles.searchRow}>
+              <Ionicons name="search-outline" size={20} color={COLORS.muted} />
               <TextInput
                 value={searchTerm}
                 onChangeText={(value) => {
@@ -110,7 +133,7 @@ export default function SearchScreen({ navigation }) {
                   setValidationError("");
                   setApiError("");
                 }}
-                placeholder="Enter a word"
+                placeholder="e.g. innovation"
                 placeholderTextColor={COLORS.muted}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -128,7 +151,7 @@ export default function SearchScreen({ navigation }) {
                   (pressed || loading) && styles.pressed,
                 ]}
               >
-                <Ionicons name="search" size={22} color={COLORS.card} />
+                <Ionicons name="arrow-forward" size={22} color={COLORS.card} />
               </Pressable>
             </View>
             {validationError ? <Text style={styles.validation}>{validationError}</Text> : null}
@@ -142,10 +165,12 @@ export default function SearchScreen({ navigation }) {
 
           {!loading && !apiError && !wordData ? (
             <View style={styles.emptyState}>
-              <Ionicons name="language-outline" size={58} color={COLORS.muted} />
-              <Text style={styles.emptyTitle}>Start exploring words</Text>
+              <View style={styles.emptyIconWrap}>
+                <Ionicons name="language-outline" size={46} color={COLORS.primary} />
+              </View>
+              <Text style={styles.emptyTitle}>Start exploring vocabulary</Text>
               <Text style={styles.emptyText}>
-                Type a word above to see meanings, phonetics, examples, and audio.
+                Search any English word to unlock meanings, examples, phonetics, audio, and history.
               </Text>
             </View>
           ) : null}
@@ -165,67 +190,116 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 16,
+    padding: 18,
   },
-  hero: {
+  heroCard: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 30,
+    elevation: 5,
+    marginBottom: 18,
+    padding: 22,
+    shadowColor: COLORS.secondary,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+  },
+  heroTopRow: {
     alignItems: "center",
-    paddingBottom: 28,
-    paddingTop: 28,
+    flexDirection: "row",
+    gap: 14,
   },
   heroIcon: {
     alignItems: "center",
-    backgroundColor: COLORS.card,
-    borderRadius: 32,
-    elevation: 4,
+    backgroundColor: COLORS.primary,
+    borderRadius: 24,
     height: 64,
     justifyContent: "center",
-    marginBottom: 14,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
     width: 64,
   },
-  title: {
-    color: COLORS.secondary,
-    fontSize: 32,
+  brandCopy: {
+    flex: 1,
+  },
+  brandLabel: {
+    color: "#BFD3FF",
+    fontSize: 12,
     fontWeight: "800",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  title: {
+    color: COLORS.card,
+    fontSize: 34,
+    fontWeight: "900",
+    marginTop: 2,
   },
   subtitle: {
-    color: COLORS.muted,
+    color: "#E6EEFF",
     fontSize: 15,
     lineHeight: 22,
-    marginTop: 8,
-    maxWidth: 320,
-    textAlign: "center",
+    marginTop: 18,
+  },
+  featureRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 18,
+  },
+  featurePill: {
+    alignItems: "center",
+    backgroundColor: COLORS.card,
+    borderRadius: 18,
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  featureText: {
+    color: COLORS.secondary,
+    fontSize: 12,
+    fontWeight: "800",
   },
   searchCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 50,
+    borderRadius: 24,
     elevation: 4,
-    minHeight: 56,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
+    padding: 16,
+    shadowColor: COLORS.secondary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+  },
+  searchTitle: {
+    color: COLORS.secondary,
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  searchHint: {
+    color: COLORS.muted,
+    fontSize: 13,
+    marginTop: 4,
   },
   searchRow: {
     alignItems: "center",
+    backgroundColor: "#F7F9FF",
+    borderColor: "rgba(45,107,228,0.12)",
+    borderRadius: 18,
+    borderWidth: 1,
     flexDirection: "row",
+    gap: 8,
+    marginTop: 14,
+    paddingLeft: 14,
   },
   input: {
     color: COLORS.text,
     flex: 1,
     fontSize: 16,
     minHeight: 48,
-    paddingHorizontal: 12,
+    paddingRight: 8,
   },
   searchButton: {
     alignItems: "center",
     backgroundColor: COLORS.primary,
-    borderRadius: 24,
+    borderRadius: 16,
     height: 48,
     justifyContent: "center",
     width: 48,
@@ -239,10 +313,21 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.56)",
+    borderRadius: 28,
     flex: 1,
     justifyContent: "center",
+    marginTop: 20,
+    minHeight: 260,
     paddingHorizontal: 24,
-    paddingTop: 64,
+  },
+  emptyIconWrap: {
+    alignItems: "center",
+    backgroundColor: COLORS.softBlue,
+    borderRadius: 32,
+    height: 72,
+    justifyContent: "center",
+    width: 72,
   },
   emptyTitle: {
     color: COLORS.secondary,

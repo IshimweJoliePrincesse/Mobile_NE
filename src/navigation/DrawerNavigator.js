@@ -35,6 +35,7 @@ const COLORS = {
   card: "#FFFFFF",
   muted: "#6B7280",
   error: "#EF4444",
+  softText: "#C7D2FE",
 };
 
 function CustomDrawerContent(props) {
@@ -75,6 +76,10 @@ function CustomDrawerContent(props) {
           <Text style={styles.drawerSubtitle}>LexiTech Solutions Ltd</Text>
         </View>
       </View>
+      <View style={styles.drawerHero}>
+        <Text style={styles.drawerHeroTitle}>Your word library</Text>
+        <Text style={styles.drawerHeroText}>Recent searches stay here for quick lookup.</Text>
+      </View>
 
       <DrawerContentScrollView
         {...props}
@@ -86,7 +91,9 @@ function CustomDrawerContent(props) {
           onPress={() => navigation.navigate("Search")}
           style={({ pressed }) => [styles.homeItem, pressed && styles.drawerPressed]}
         >
-          <Ionicons name="search-outline" size={20} color={COLORS.card} />
+          <View style={styles.navIcon}>
+            <Ionicons name="search-outline" size={18} color={COLORS.primary} />
+          </View>
           <Text style={styles.homeText}>Search</Text>
         </Pressable>
 
@@ -110,6 +117,9 @@ function CustomDrawerContent(props) {
                 pressed && styles.drawerPressed,
               ]}
             >
+              <View style={styles.historyIcon}>
+                <Text style={styles.historyInitial}>{word.slice(0, 1).toUpperCase()}</Text>
+              </View>
               <Text style={styles.historyText}>{word}</Text>
               {loadingWord === word ? (
                 <ActivityIndicator color={COLORS.card} size="small" />
@@ -211,7 +221,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     paddingHorizontal: 18,
-    paddingVertical: 22,
+    paddingTop: 22,
+    paddingBottom: 14,
   },
   logo: {
     alignItems: "center",
@@ -227,22 +238,51 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   drawerSubtitle: {
-    color: "#C7D2FE",
+    color: COLORS.softText,
     fontSize: 12,
     marginTop: 2,
+  },
+  drawerHero: {
+    backgroundColor: "rgba(45,107,228,0.18)",
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 18,
+    borderWidth: 1,
+    marginHorizontal: 14,
+    marginBottom: 16,
+    padding: 14,
+  },
+  drawerHeroTitle: {
+    color: COLORS.card,
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  drawerHeroText: {
+    color: COLORS.softText,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 4,
   },
   drawerScrollContent: {
     paddingTop: 0,
   },
   homeItem: {
     alignItems: "center",
-    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 16,
     flexDirection: "row",
     gap: 10,
     marginHorizontal: 12,
     marginBottom: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  navIcon: {
+    alignItems: "center",
+    backgroundColor: COLORS.card,
+    borderRadius: 14,
+    height: 30,
+    justifyContent: "center",
+    width: 30,
   },
   homeText: {
     color: COLORS.card,
@@ -250,7 +290,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   historyLabel: {
-    color: "#C7D2FE",
+    color: COLORS.softText,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 0.6,
@@ -271,15 +311,28 @@ const styles = StyleSheet.create({
   },
   historyItem: {
     alignItems: "center",
-    borderLeftColor: COLORS.primary,
-    borderLeftWidth: 4,
-    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 16,
     flexDirection: "row",
+    gap: 10,
     justifyContent: "space-between",
     marginHorizontal: 12,
-    marginVertical: 3,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    marginVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  historyIcon: {
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+    borderRadius: 14,
+    height: 30,
+    justifyContent: "center",
+    width: 30,
+  },
+  historyInitial: {
+    color: COLORS.card,
+    fontSize: 13,
+    fontWeight: "900",
   },
   historyText: {
     color: COLORS.card,

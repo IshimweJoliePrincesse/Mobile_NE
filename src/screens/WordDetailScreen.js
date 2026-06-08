@@ -20,6 +20,7 @@ const COLORS = {
   card: "#FFFFFF",
   text: "#1C1C1E",
   muted: "#6B7280",
+  softBlue: "#EAF1FF",
 };
 
 function findPhoneticText(entries) {
@@ -31,12 +32,64 @@ function findPhoneticText(entries) {
   return entryWithText?.phonetic || phoneticWithText?.text || "No phonetic spelling available";
 }
 
-function findAudioUrl(entries) {
-  const audioItem = entries
-    .flatMap((entry) => entry?.phonetics || [])
-    .find((phonetic) => /^https?:\/\//i.test(phonetic?.audio || ""));
+function isValidAudioUrl(audioUrl) {
+  return typeof audioUrl === "string" && /^https?:\/\//i.test(audioUrl);
+}
 
-  return audioItem?.audio || "";
+function getPronunciationLabel(phonetic, fallbackIndex) {
+  const audioUrl = String(phonetic?.audio || "").toLowerCase();
+
+  if (audioUrl.includes("-uk.") || audioUrl.includes("-gb.") || audioUrl.includes("uk.mp3")) {
+    return "UK pronunciation";
+  }
+
+  if (audioUrl.includes("-us.") || audioUrl.includes("us.mp3")) {
+    return "US pronunciation";
+  }
+
+  if (audioUrl.includes("-au.") || audioUrl.includes("au.mp3")) {
+    return "AU pronunciation";
+  }
+
+  return `Pronunciation ${fallbackIndex}`;
+}
+
+function getAudioPronunciations(entries) {
+  const phonetics = entries.flatMap((entry) => entry?.phonetics || []);
+  const usedAudioUrls = new Set();
+  const usedLabels = new Set();
+  const pronunciations = [];
+
+  phonetics.forEach((phonetic) => {
+    if (!isValidAudioUrl(phonetic?.audio) || usedAudioUrls.has(phonetic.audio)) {
+      return;
+    }
+
+    const label = getPronunciationLabel(phonetic, pronunciations.length + 1);
+    const isRegionalLabel = label.includes("UK") || label.includes("US") || label.includes("AU");
+
+    if (isRegionalLabel && usedLabels.has(label)) {
+      return;
+    }
+
+    usedAudioUrls.add(phonetic.audio);
+    usedLabels.add(label);
+    pronunciations.push({
+      label,
+      phoneticText: phonetic.text || "",
+      audioUrl: phonetic.audio,
+    });
+  });
+
+  return pronunciations.sort((first, second) => {
+    const order = {
+      "UK pronunciation": 1,
+      "US pronunciation": 2,
+      "AU pronunciation": 3,
+    };
+
+    return (order[first.label] || 99) - (order[second.label] || 99);
+  });
 }
 
 function flattenMeanings(entries) {
@@ -65,7 +118,7 @@ export default function WordDetailScreen({ route }) {
 
   const word = normalizeSearchWord(wordData?.[0]?.word || requestedWord);
   const phonetic = useMemo(() => findPhoneticText(wordData), [wordData]);
-  const audioUrl = useMemo(() => findAudioUrl(wordData), [wordData]);
+  const audioPronunciations = useMemo(() => getAudioPronunciations(wordData), [wordData]);
   const meanings = useMemo(() => flattenMeanings(wordData), [wordData]);
 
   const retrySearch = async () => {
@@ -98,25 +151,57 @@ export default function WordDetailScreen({ route }) {
         {!loading && !error ? (
           <>
             <View style={styles.headerCard}>
-              <Text selectable style={styles.wordTitle}>
-                {word || "Unknown word"}
-              </Text>
+              <View style={styles.headerTopRow}>
+                <View style={styles.wordIcon}>
+                  <Text style={styles.wordInitial}>{(word || "?").slice(0, 1).toUpperCase()}</Text>
+                </View>
+                <View style={styles.wordCopy}>
+                  <Text style={styles.eyebrow}>Dictionary result</Text>
+                  <Text selectable style={styles.wordTitle}>
+                    {word || "Unknown word"}
+                  </Text>
+                </View>
+              </View>
               <View style={styles.phoneticRow}>
                 <Text selectable style={styles.phonetic}>
                   {phonetic}
                 </Text>
-                <AudioPlayer audioUrl={audioUrl} onError={setAudioError} />
+                {audioPronunciations.length ? (
+                  <View style={styles.pronunciationList}>
+                    {audioPronunciations.map((pronunciation) => (
+                      <View key={pronunciation.audioUrl} style={styles.pronunciationCard}>
+                        <View style={styles.pronunciationCopy}>
+                          <Text style={styles.pronunciationLabel}>{pronunciation.label}</Text>
+                          {pronunciation.phoneticText ? (
+                            <Text selectable style={styles.pronunciationText}>
+                              {pronunciation.phoneticText}
+                            </Text>
+                          ) : null}
+                        </View>
+                        <AudioPlayer audioUrl={pronunciation.audioUrl} onError={setAudioError} />
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
               </View>
               {audioError ? <Text style={styles.audioError}>{audioError}</Text> : null}
             </View>
 
             {meanings.length ? (
-              meanings.map((meaning, index) => (
-                <DefinitionCard
-                  key={`${meaning?.partOfSpeech || "meaning"}-${index}`}
-                  meaning={meaning}
-                />
-              ))
+              <>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Meanings</Text>
+                  <Text style={styles.sectionMeta}>{meanings.length} found</Text>
+                </View>
+                {meanings.map((meaning, index) => (
+                  <DefinitionCard
+                    key={`${meaning?.partOfSpeech || "meaning"}-${index}`}
+                    meaning={meaning}
+                    meaningNumber={index + 1}
+                    totalMeanings={meanings.length}
+                  />
+                ))}
+              </>
             ) : (
               <ErrorMessage message={ERROR_MESSAGES.empty} onRetry={retrySearch} />
             )}
@@ -133,42 +218,119 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 18,
+    paddingBottom: 34,
   },
   headerCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    elevation: 3,
-    marginBottom: 16,
-    padding: 20,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    backgroundColor: COLORS.secondary,
+    borderRadius: 28,
+    elevation: 5,
+    marginBottom: 20,
+    padding: 22,
+    shadowColor: COLORS.secondary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+  },
+  headerTopRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+  },
+  wordIcon: {
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+    borderRadius: 24,
+    height: 54,
+    justifyContent: "center",
+    width: 54,
+  },
+  wordInitial: {
+    color: COLORS.card,
+    fontSize: 24,
+    fontWeight: "900",
+  },
+  wordCopy: {
+    flex: 1,
+  },
+  eyebrow: {
+    color: "#BFD3FF",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
   },
   wordTitle: {
-    color: COLORS.secondary,
-    fontSize: 32,
-    fontWeight: "800",
+    color: COLORS.card,
+    fontSize: 34,
+    fontWeight: "900",
+    marginTop: 2,
     textTransform: "capitalize",
   },
   phoneticRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    marginTop: 12,
+    alignItems: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderRadius: 20,
+    flexDirection: "column",
+    gap: 14,
+    marginTop: 18,
+    padding: 14,
   },
   phonetic: {
-    color: COLORS.muted,
-    flex: 1,
+    color: "#E6EEFF",
     fontSize: 16,
+    fontStyle: "italic",
+  },
+  pronunciationList: {
+    gap: 10,
+    width: "100%",
+  },
+  pronunciationCard: {
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderColor: "rgba(255,255,255,0.12)",
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 12,
+    padding: 12,
+  },
+  pronunciationCopy: {
+    gap: 3,
+  },
+  pronunciationLabel: {
+    color: COLORS.card,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  pronunciationText: {
+    color: "#BFD3FF",
+    fontSize: 13,
     fontStyle: "italic",
   },
   audioError: {
     color: "#EF4444",
     fontSize: 13,
     marginTop: 10,
+  },
+  sectionHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    paddingHorizontal: 4,
+  },
+  sectionTitle: {
+    color: COLORS.secondary,
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  sectionMeta: {
+    backgroundColor: COLORS.softBlue,
+    borderRadius: 12,
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
 });
