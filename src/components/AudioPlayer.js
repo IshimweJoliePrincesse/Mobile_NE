@@ -41,6 +41,9 @@ export default function AudioPlayer({ audioUrl, onError }) {
   useEffect(() => {
     return () => {
       if (sound) {
+        if (activeSound === sound) {
+          activeSound = null;
+        }
         sound.unloadAsync().catch(() => {});
       }
     };
@@ -71,6 +74,9 @@ export default function AudioPlayer({ audioUrl, onError }) {
       if (status.isLoaded) {
         await sound.stopAsync();
         await sound.setPositionAsync(0);
+      } else {
+        setSound(null);
+        setLoadedUrl("");
       }
 
       setPlaybackState(PLAYBACK_STATES.stopped);
@@ -90,6 +96,10 @@ export default function AudioPlayer({ audioUrl, onError }) {
       if (status.isLoaded && status.isPlaying) {
         await sound.pauseAsync();
         setPlaybackState(PLAYBACK_STATES.paused);
+      } else if (!status.isLoaded) {
+        setSound(null);
+        setLoadedUrl("");
+        setPlaybackState(PLAYBACK_STATES.stopped);
       }
     } catch (_error) {
       handlePlaybackError();
@@ -101,26 +111,46 @@ export default function AudioPlayer({ audioUrl, onError }) {
       if (sound && loadedUrl === audioUrl) {
         const status = await sound.getStatusAsync();
 
-        if (status.isLoaded && playbackState === PLAYBACK_STATES.stopped) {
-          await sound.setPositionAsync(0);
+        if (status.isLoaded) {
+          if (activeSound && activeSound !== sound) {
+            await activeSound.stopAsync().catch(() => {});
+            await activeSound.unloadAsync().catch(() => {});
+          }
+
+          if (playbackState === PLAYBACK_STATES.stopped) {
+            await sound.setPositionAsync(0);
+          }
+
+          activeSound = sound;
+          await sound.playAsync();
+          setPlaybackState(PLAYBACK_STATES.playing);
+          return;
         }
 
-        await sound.playAsync();
-        setPlaybackState(PLAYBACK_STATES.playing);
-        return;
-      }
+        if (activeSound === sound) {
+          activeSound = null;
+        }
 
-      if (sound && loadedUrl !== audioUrl) {
-        await sound.stopAsync().catch(() => {});
-        await sound.unloadAsync().catch(() => {});
         setSound(null);
         setLoadedUrl("");
         setPlaybackState(PLAYBACK_STATES.stopped);
       }
 
-      if (activeSound) {
+      if (sound && loadedUrl !== audioUrl) {
+        await sound.stopAsync().catch(() => {});
+        await sound.unloadAsync().catch(() => {});
+        if (activeSound === sound) {
+          activeSound = null;
+        }
+        setSound(null);
+        setLoadedUrl("");
+        setPlaybackState(PLAYBACK_STATES.stopped);
+      }
+
+      if (activeSound && activeSound !== sound) {
         await activeSound.stopAsync().catch(() => {});
         await activeSound.unloadAsync().catch(() => {});
+        activeSound = null;
       }
 
       const { sound: loadedSound } = await Audio.Sound.createAsync(
