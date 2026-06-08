@@ -119,17 +119,32 @@ export default function SearchScreen({ navigation }) {
         >
           {/* This hero card introduces the app and summarizes the main features. */}
           <View style={styles.heroCard}>
+            <View style={styles.heroGlowOne} />
+            <View style={styles.heroGlowTwo} />
             <View style={styles.heroTopRow}>
               <View style={styles.heroIcon}>
                 <Ionicons name="book-outline" size={34} color="#FFFFFF" />
               </View>
               <View style={styles.brandCopy}>
                 <Text style={styles.brandLabel}>LexiTech Solutions Ltd</Text>
-                <Text style={styles.title}>Dictionary</Text>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.78}
+                  numberOfLines={1}
+                  style={styles.title}
+                >
+                  Dictionary
+                </Text>
+              </View>
+            </View>
+            <View style={styles.heroBadgeRow}>
+              <View style={styles.heroBadge}>
+                <Ionicons name="sparkles" size={14} color={colors.gold} />
+                <Text style={styles.heroBadgeText}>Smart lookup</Text>
               </View>
             </View>
             <Text style={styles.subtitle}>
-              Search English words, read definitions, and listen to pronunciations.
+              Search beautifully, understand faster, and hear every word with clear regional pronunciations.
             </Text>
             <View style={styles.featureRow}>
               <View style={styles.featurePill}>
@@ -145,11 +160,35 @@ export default function SearchScreen({ navigation }) {
                 <Text style={styles.featureText}>History</Text>
               </View>
             </View>
+            <View style={styles.heroStats}>
+              <View style={styles.heroStatItem}>
+                <Text style={styles.heroStatValue}>UK/US</Text>
+                <Text style={styles.heroStatLabel}>Audio</Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStatItem}>
+                <Text style={styles.heroStatValue}>Fast</Text>
+                <Text style={styles.heroStatLabel}>Lookup</Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStatItem}>
+                <Text style={styles.heroStatValue}>Saved</Text>
+                <Text style={styles.heroStatLabel}>History</Text>
+              </View>
+            </View>
           </View>
 
           {/* This card contains the search input, instructions, validation message, and submit button. */}
           <View style={styles.searchCard}>
-            <Text style={styles.searchTitle}>Find a word</Text>
+            <View style={styles.searchHeader}>
+              <View>
+                <Text style={styles.searchEyebrow}>Start here</Text>
+                <Text style={styles.searchTitle}>Find a word</Text>
+              </View>
+              <View style={styles.searchSpark}>
+                <Ionicons name="flash-outline" size={18} color={colors.gold} />
+              </View>
+            </View>
             <Text style={styles.searchHint}>Search one word only. Letters only, 2 to 50 characters.</Text>
             <View style={styles.searchRow}>
               <Ionicons name="search-outline" size={20} color={colors.muted} />
@@ -228,6 +267,11 @@ export default function SearchScreen({ navigation }) {
               <Text style={styles.emptyText}>
                 Search any English word to unlock meanings, examples, phonetics, audio, and history.
               </Text>
+              <View style={styles.emptyChips}>
+                <Text style={styles.emptyChip}>Meanings</Text>
+                <Text style={styles.emptyChip}>Examples</Text>
+                <Text style={styles.emptyChip}>Pronunciation</Text>
+              </View>
             </View>
           ) : null}
         </ScrollView>
@@ -249,30 +293,56 @@ function createStyles(colors) {
   scrollContent: {
     flexGrow: 1,
     padding: 18,
+    paddingBottom: 30,
   },
   heroCard: {
     backgroundColor: colors.secondary,
-    borderRadius: 30,
-    elevation: 5,
+    borderColor: colors.glass,
+    borderRadius: 34,
+    borderWidth: 1,
+    elevation: 8,
     marginBottom: 18,
+    overflow: "hidden",
     padding: 22,
-    shadowColor: colors.secondary,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.24,
+    shadowRadius: 28,
+  },
+  heroGlowOne: {
+    backgroundColor: colors.primary,
+    borderRadius: 80,
+    height: 160,
+    opacity: 0.28,
+    position: "absolute",
+    right: -54,
+    top: -54,
+    width: 160,
+  },
+  heroGlowTwo: {
+    backgroundColor: colors.accent,
+    borderRadius: 58,
+    bottom: -48,
+    height: 116,
+    left: -36,
+    opacity: 0.22,
+    position: "absolute",
+    width: 116,
   },
   heroTopRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 14,
+    gap: 12,
   },
   heroIcon: {
     alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 24,
-    height: 64,
+    backgroundColor: colors.glass,
+    borderColor: "rgba(255,255,255,0.24)",
+    borderWidth: 1,
+    borderRadius: 22,
+    height: 58,
     justifyContent: "center",
-    width: 64,
+    width: 58,
   },
   brandCopy: {
     flex: 1,
@@ -286,14 +356,35 @@ function createStyles(colors) {
   },
   title: {
     color: "#FFFFFF",
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: "900",
+    lineHeight: 34,
     marginTop: 2,
+  },
+  heroBadge: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderColor: "rgba(255,255,255,0.18)",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  heroBadgeRow: {
+    alignItems: "flex-start",
+    marginTop: 12,
+  },
+  heroBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
   },
   subtitle: {
     color: "#E6EEFF",
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 21,
     marginTop: 18,
   },
   featureRow: {
@@ -304,7 +395,7 @@ function createStyles(colors) {
   },
   featurePill: {
     alignItems: "center",
-    backgroundColor: colors.card,
+    backgroundColor: "rgba(255,255,255,0.92)",
     borderRadius: 18,
     flexDirection: "row",
     gap: 6,
@@ -312,39 +403,96 @@ function createStyles(colors) {
     paddingVertical: 7,
   },
   featureText: {
-    color: colors.text,
+    color: "#111827",
     fontSize: 12,
     fontWeight: "800",
   },
+  heroStats: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 22,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  heroStatItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  heroStatValue: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  heroStatLabel: {
+    color: colors.softText,
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 2,
+    textTransform: "uppercase",
+  },
+  heroDivider: {
+    backgroundColor: "rgba(255,255,255,0.16)",
+    height: 30,
+    width: 1,
+  },
   searchCard: {
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    elevation: 4,
-    padding: 16,
-    shadowColor: colors.secondary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
+    backgroundColor: colors.cardElevated || colors.card,
+    borderColor: colors.border,
+    borderRadius: 28,
+    borderWidth: 1,
+    elevation: 5,
+    padding: 18,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.16,
+    shadowRadius: 22,
+  },
+  searchHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  searchEyebrow: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
   },
   searchTitle: {
     color: colors.text,
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: "900",
+    marginTop: 2,
+  },
+  searchSpark: {
+    alignItems: "center",
+    backgroundColor: colors.accentSoft,
+    borderRadius: 18,
+    height: 42,
+    justifyContent: "center",
+    width: 42,
   },
   searchHint: {
     color: colors.muted,
     fontSize: 13,
-    marginTop: 4,
+    lineHeight: 19,
+    marginTop: 8,
   },
   searchRow: {
     alignItems: "center",
     backgroundColor: colors.input,
     borderColor: colors.border,
-    borderRadius: 18,
+    borderRadius: 22,
     borderWidth: 1,
     flexDirection: "row",
     gap: 8,
-    marginTop: 14,
+    marginTop: 16,
     paddingLeft: 14,
   },
   input: {
@@ -357,10 +505,11 @@ function createStyles(colors) {
   searchButton: {
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    height: 48,
+    borderRadius: 19,
+    height: 50,
     justifyContent: "center",
-    width: 48,
+    marginRight: 2,
+    width: 50,
   },
   validation: {
     color: colors.error,
@@ -372,7 +521,7 @@ function createStyles(colors) {
   autocompleteBox: {
     backgroundColor: colors.input,
     borderColor: colors.border,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     marginTop: 12,
     overflow: "hidden",
@@ -394,6 +543,8 @@ function createStyles(colors) {
   },
   autocompleteItem: {
     alignItems: "center",
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     justifyContent: "space-between",
     minHeight: 46,
@@ -408,20 +559,25 @@ function createStyles(colors) {
   emptyState: {
     alignItems: "center",
     backgroundColor: colors.translucentCard,
-    borderRadius: 28,
+    borderColor: colors.border,
+    borderRadius: 32,
+    borderWidth: 1,
     flex: 1,
     justifyContent: "center",
     marginTop: 20,
     minHeight: 260,
     paddingHorizontal: 24,
+    paddingVertical: 28,
   },
   emptyIconWrap: {
     alignItems: "center",
-    backgroundColor: colors.softBlue,
-    borderRadius: 32,
-    height: 72,
+    backgroundColor: colors.primarySoft || colors.softBlue,
+    borderColor: colors.border,
+    borderRadius: 36,
+    borderWidth: 1,
+    height: 78,
     justifyContent: "center",
-    width: 72,
+    width: 78,
   },
   emptyTitle: {
     color: colors.text,
@@ -435,6 +591,23 @@ function createStyles(colors) {
     lineHeight: 22,
     marginTop: 8,
     textAlign: "center",
+  },
+  emptyChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+    marginTop: 18,
+  },
+  emptyChip: {
+    backgroundColor: colors.softBlue,
+    borderRadius: 14,
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   pressed: {
     opacity: 0.75,

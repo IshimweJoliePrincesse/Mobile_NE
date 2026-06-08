@@ -67,6 +67,7 @@ function CustomDrawerContent(props) {
     <SafeAreaView style={styles.drawerSafeArea}>
       {/* This top drawer area displays the app identity. */}
       <View style={styles.drawerHeader}>
+        <View style={styles.drawerGlow} />
         <View style={styles.logo}>
           <Ionicons name="book" size={28} color="#FFFFFF" />
         </View>
@@ -77,6 +78,9 @@ function CustomDrawerContent(props) {
       </View>
       {/* This small drawer card explains what the search history section is for. */}
       <View style={styles.drawerHero}>
+        <View style={styles.drawerHeroIcon}>
+          <Ionicons name="library-outline" size={18} color={colors.gold} />
+        </View>
         <Text style={styles.drawerHeroTitle}>Your word library</Text>
         <Text style={styles.drawerHeroText}>
           Recent searches stay here for quick lookup.
@@ -160,7 +164,7 @@ function CustomDrawerContent(props) {
             size={18}
             color="#FFFFFF"
           />
-          <Text style={styles.themeText}>{isDark ? "Light Mode" : "Dark Mode"}</Text>
+          <Text style={styles.themeText}>{isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -236,11 +240,12 @@ function createStyles(colors) {
   },
   headerTitle: {
     color: colors.text,
+    fontSize: 22,
     fontWeight: "800",
   },
   drawer: {
     backgroundColor: colors.secondary,
-    width: 300,
+    width: 310,
   },
   drawerSafeArea: {
     backgroundColor: colors.secondary,
@@ -248,38 +253,64 @@ function createStyles(colors) {
   },
   drawerHeader: {
     alignItems: "center",
+    borderBottomColor: "rgba(255,255,255,0.08)",
+    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 12,
+    overflow: "hidden",
     paddingHorizontal: 18,
-    paddingTop: 22,
-    paddingBottom: 14,
+    paddingTop: 26,
+    paddingBottom: 18,
+  },
+  drawerGlow: {
+    backgroundColor: colors.primary,
+    borderRadius: 70,
+    height: 140,
+    opacity: 0.22,
+    position: "absolute",
+    right: -48,
+    top: -60,
+    width: 140,
   },
   logo: {
     alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 22,
-    height: 44,
+    backgroundColor: colors.glass,
+    borderColor: "rgba(255,255,255,0.18)",
+    borderRadius: 24,
+    borderWidth: 1,
+    height: 48,
     justifyContent: "center",
-    width: 44,
+    width: 48,
   },
   drawerTitle: {
     color: "#FFFFFF",
-    fontSize: 24,
-    fontWeight: "800",
+    fontSize: 25,
+    fontWeight: "900",
   },
   drawerSubtitle: {
     color: colors.softText,
     fontSize: 12,
+    fontWeight: "700",
     marginTop: 2,
   },
   drawerHero: {
-    backgroundColor: "rgba(45,107,228,0.18)",
-    borderColor: "rgba(255,255,255,0.10)",
-    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 22,
     borderWidth: 1,
     marginHorizontal: 14,
-    marginBottom: 16,
-    padding: 14,
+    marginBottom: 18,
+    marginTop: 16,
+    padding: 16,
+  },
+  drawerHeroIcon: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 15,
+    height: 34,
+    justifyContent: "center",
+    marginBottom: 10,
+    width: 34,
   },
   drawerHeroTitle: {
     color: "#FFFFFF",
@@ -290,15 +321,17 @@ function createStyles(colors) {
     color: colors.softText,
     fontSize: 13,
     lineHeight: 19,
-    marginTop: 4,
+    marginTop: 6,
   },
   drawerScrollContent: {
     paddingTop: 0,
   },
   homeItem: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 18,
+    borderWidth: 1,
     flexDirection: "row",
     gap: 10,
     marginHorizontal: 12,
@@ -309,10 +342,10 @@ function createStyles(colors) {
   navIcon: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    height: 30,
+    borderRadius: 15,
+    height: 32,
     justifyContent: "center",
-    width: 30,
+    width: 32,
   },
   homeText: {
     color: "#FFFFFF",
@@ -330,6 +363,9 @@ function createStyles(colors) {
   },
   drawerEmpty: {
     alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 18,
+    marginHorizontal: 12,
     paddingHorizontal: 28,
     paddingVertical: 26,
   },
@@ -341,8 +377,10 @@ function createStyles(colors) {
   },
   historyItem: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 18,
+    borderWidth: 1,
     flexDirection: "row",
     gap: 10,
     justifyContent: "space-between",
@@ -354,10 +392,10 @@ function createStyles(colors) {
   historyIcon: {
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: 14,
-    height: 30,
+    borderRadius: 15,
+    height: 32,
     justifyContent: "center",
-    width: 30,
+    width: 32,
   },
   historyInitial: {
     color: "#FFFFFF",
@@ -398,12 +436,14 @@ function createStyles(colors) {
   },
   themeButton: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.14)",
-    borderRadius: 14,
+    backgroundColor: colors.primary,
+    borderRadius: 18,
     flexDirection: "row",
     gap: 10,
     justifyContent: "center",
     marginBottom: 10,
+    minHeight: 50,
+    paddingHorizontal: 12,
     paddingVertical: 12,
   },
   themeText: {

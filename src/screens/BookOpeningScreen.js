@@ -54,6 +54,8 @@ export default function BookOpeningScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <View style={styles.bgGlowOne} />
+        <View style={styles.bgGlowTwo} />
         {/* This title area tells the user the dictionary is getting ready. */}
         <View style={styles.titleBlock}>
           <View style={styles.logoCircle}>
@@ -125,7 +127,28 @@ function createStyles(colors) {
       alignItems: "center",
       flex: 1,
       justifyContent: "center",
+      overflow: "hidden",
       padding: 24,
+    },
+    bgGlowOne: {
+      backgroundColor: colors.primary,
+      borderRadius: 110,
+      height: 220,
+      opacity: 0.18,
+      position: "absolute",
+      right: -72,
+      top: 70,
+      width: 220,
+    },
+    bgGlowTwo: {
+      backgroundColor: colors.accent,
+      borderRadius: 90,
+      bottom: 86,
+      height: 180,
+      left: -70,
+      opacity: 0.16,
+      position: "absolute",
+      width: 180,
     },
     titleBlock: {
       alignItems: "center",
@@ -134,11 +157,18 @@ function createStyles(colors) {
     logoCircle: {
       alignItems: "center",
       backgroundColor: colors.primary,
-      borderRadius: 30,
-      height: 70,
+      borderColor: colors.primarySoft || colors.softBlue,
+      borderRadius: 34,
+      borderWidth: 4,
+      elevation: 6,
+      height: 78,
       justifyContent: "center",
       marginBottom: 16,
-      width: 70,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.18,
+      shadowRadius: 20,
+      width: 78,
     },
     brandLabel: {
       color: colors.muted,
@@ -149,7 +179,7 @@ function createStyles(colors) {
     },
     title: {
       color: colors.text,
-      fontSize: 30,
+      fontSize: 32,
       fontWeight: "900",
       marginTop: 6,
       textAlign: "center",
@@ -163,18 +193,18 @@ function createStyles(colors) {
       width: 230,
     },
     bookPage: {
-      backgroundColor: colors.card,
+      backgroundColor: colors.cardElevated || colors.card,
       borderColor: colors.border,
-      borderRadius: 18,
+      borderRadius: 22,
       borderWidth: 1,
-      elevation: 4,
+      elevation: 6,
       height: 140,
       justifyContent: "center",
       padding: 18,
-      shadowColor: colors.secondary,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.12,
-      shadowRadius: 16,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 16 },
+      shadowOpacity: 0.18,
+      shadowRadius: 24,
       width: 105,
     },
     leftBookPage: {
@@ -193,14 +223,14 @@ function createStyles(colors) {
       width: 10,
     },
     pageLine: {
-      backgroundColor: colors.border,
+      backgroundColor: colors.primarySoft || colors.border,
       borderRadius: 2,
       height: 5,
       marginBottom: 13,
       width: "100%",
     },
     pageLineShort: {
-      backgroundColor: colors.border,
+      backgroundColor: colors.accentSoft || colors.border,
       borderRadius: 2,
       height: 5,
       marginBottom: 13,
@@ -208,7 +238,12 @@ function createStyles(colors) {
     },
     loadingCopy: {
       alignItems: "center",
+      backgroundColor: colors.translucentCard,
+      borderColor: colors.border,
+      borderRadius: 24,
+      borderWidth: 1,
       marginTop: 34,
+      padding: 18,
     },
     loadingTitle: {
       color: colors.text,

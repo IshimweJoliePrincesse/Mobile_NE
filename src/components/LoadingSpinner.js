@@ -23,12 +23,19 @@ function createStyles(colors) {
   return StyleSheet.create({
   container: {
     alignItems: "center",
+    backgroundColor: colors.translucentCard,
+    borderColor: colors.border,
+    borderRadius: 24,
+    borderWidth: 1,
     justifyContent: "center",
+    marginTop: 16,
+    paddingHorizontal: 20,
     paddingVertical: 24,
   },
   message: {
     color: colors.muted,
     fontSize: 15,
+    fontWeight: "700",
     marginTop: 12,
   },
   });

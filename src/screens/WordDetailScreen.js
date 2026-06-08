@@ -2,6 +2,7 @@
 // These imports bring in React, layout components, reusable cards, audio controls, history access, and dictionary API helpers.
 import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import AudioPlayer from "../components/AudioPlayer";
 import DefinitionCard from "../components/DefinitionCard";
 import ErrorMessage from "../components/ErrorMessage";
@@ -162,6 +163,8 @@ export default function WordDetailScreen({ route }) {
           <>
             {/* This top card shows the selected word, phonetic spelling, and available pronunciation controls. */}
             <View style={styles.headerCard}>
+              <View style={styles.headerGlowOne} />
+              <View style={styles.headerGlowTwo} />
               <View style={styles.headerTopRow}>
                 <View style={styles.wordIcon}>
                   <Text style={styles.wordInitial}>{(word || "?").slice(0, 1).toUpperCase()}</Text>
@@ -172,6 +175,14 @@ export default function WordDetailScreen({ route }) {
                     {word || "Unknown word"}
                   </Text>
                 </View>
+                <View style={styles.resultBadge}>
+                  <Ionicons name="sparkles" size={14} color={colors.gold} />
+                </View>
+              </View>
+              <View style={styles.resultMetaRow}>
+                <Text style={styles.resultMetaText}>{meanings.length || 0} meanings</Text>
+                <Text style={styles.resultMetaDot}>•</Text>
+                <Text style={styles.resultMetaText}>{audioPronunciations.length || 0} audio clips</Text>
               </View>
               <View style={styles.phoneticRow}>
                 <Text selectable style={styles.phonetic}>
@@ -194,7 +205,14 @@ export default function WordDetailScreen({ route }) {
                       </View>
                     ))}
                   </View>
-                ) : null}
+                ) : (
+                  <View style={styles.noAudioCard}>
+                    <Ionicons name="volume-mute-outline" size={18} color={colors.softText} />
+                    <Text style={styles.noAudioText}>
+                      No audio pronunciation is available for this word.
+                    </Text>
+                  </View>
+                )}
               </View>
               {audioError ? <Text style={styles.audioError}>{audioError}</Text> : null}
             </View>
@@ -234,18 +252,41 @@ function createStyles(colors) {
   },
   scrollContent: {
     padding: 18,
-    paddingBottom: 34,
+    paddingBottom: 36,
   },
   headerCard: {
     backgroundColor: colors.secondary,
-    borderRadius: 28,
-    elevation: 5,
+    borderColor: colors.glass,
+    borderRadius: 34,
+    borderWidth: 1,
+    elevation: 8,
     marginBottom: 20,
+    overflow: "hidden",
     padding: 22,
-    shadowColor: colors.secondary,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.24,
+    shadowRadius: 28,
+  },
+  headerGlowOne: {
+    backgroundColor: colors.primary,
+    borderRadius: 78,
+    height: 156,
+    opacity: 0.26,
+    position: "absolute",
+    right: -48,
+    top: -58,
+    width: 156,
+  },
+  headerGlowTwo: {
+    backgroundColor: colors.accent,
+    borderRadius: 54,
+    bottom: -42,
+    height: 108,
+    left: -34,
+    opacity: 0.2,
+    position: "absolute",
+    width: 108,
   },
   headerTopRow: {
     alignItems: "center",
@@ -254,7 +295,9 @@ function createStyles(colors) {
   },
   wordIcon: {
     alignItems: "center",
-    backgroundColor: colors.primary,
+    backgroundColor: colors.glass,
+    borderColor: "rgba(255,255,255,0.22)",
+    borderWidth: 1,
     borderRadius: 24,
     height: 54,
     justifyContent: "center",
@@ -277,19 +320,48 @@ function createStyles(colors) {
   },
   wordTitle: {
     color: "#FFFFFF",
-    fontSize: 34,
+    fontSize: 38,
     fontWeight: "900",
     marginTop: 2,
     textTransform: "capitalize",
   },
+  resultBadge: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(255,255,255,0.16)",
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  resultMetaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 16,
+  },
+  resultMetaText: {
+    color: colors.softText,
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  resultMetaDot: {
+    color: "rgba(255,255,255,0.46)",
+    fontSize: 16,
+    fontWeight: "900",
+  },
   phoneticRow: {
     alignItems: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 24,
+    borderWidth: 1,
     flexDirection: "column",
     gap: 14,
     marginTop: 18,
-    padding: 14,
+    padding: 15,
   },
   phonetic: {
     color: colors.heroText,
@@ -301,12 +373,12 @@ function createStyles(colors) {
     width: "100%",
   },
   pronunciationCard: {
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderColor: "rgba(255,255,255,0.12)",
-    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.11)",
+    borderColor: "rgba(255,255,255,0.16)",
+    borderRadius: 20,
     borderWidth: 1,
     gap: 12,
-    padding: 12,
+    padding: 14,
   },
   pronunciationCopy: {
     gap: 3,
@@ -321,6 +393,24 @@ function createStyles(colors) {
     fontSize: 13,
     fontStyle: "italic",
   },
+  noAudioCard: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    padding: 12,
+    width: "100%",
+  },
+  noAudioText: {
+    color: colors.softText,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
   audioError: {
     color: colors.error,
     fontSize: 13,
@@ -330,20 +420,20 @@ function createStyles(colors) {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 12,
     paddingHorizontal: 4,
   },
   sectionTitle: {
     color: colors.text,
-    fontSize: 20,
+    fontSize: 23,
     fontWeight: "900",
   },
   sectionMeta: {
-    backgroundColor: colors.softBlue,
-    borderRadius: 12,
+    backgroundColor: colors.primarySoft || colors.softBlue,
+    borderRadius: 14,
     color: colors.primary,
     fontSize: 12,
-    fontWeight: "800",
+    fontWeight: "900",
     overflow: "hidden",
     paddingHorizontal: 10,
     paddingVertical: 5,

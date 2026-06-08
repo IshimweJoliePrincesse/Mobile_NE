@@ -42,10 +42,17 @@ function createStyles(colors) {
   return StyleSheet.create({
   container: {
     alignItems: "center",
-    backgroundColor: colors.card,
-    borderRadius: 16,
+    backgroundColor: colors.cardElevated || colors.card,
+    borderColor: colors.border,
+    borderRadius: 24,
+    borderWidth: 1,
+    elevation: 3,
     marginTop: 16,
-    padding: 18,
+    padding: 20,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
   },
   compactContainer: {
     alignItems: "flex-start",
@@ -67,7 +74,9 @@ function createStyles(colors) {
     backgroundColor: colors.primary,
     borderRadius: 24,
     marginTop: 14,
-    paddingHorizontal: 18,
+    minHeight: 46,
+    justifyContent: "center",
+    paddingHorizontal: 22,
     paddingVertical: 10,
   },
   retryText: {

@@ -82,8 +82,12 @@ function createDictionaryError(message, status) {
 
 // This helper turns Axios/network errors into messages normal users can understand.
 export function getFriendlyErrorMessage(error) {
-  // If the error already has one of our friendly messages, use it directly.
-  if (error?.message && Object.values(ERROR_MESSAGES).includes(error.message)) {
+  // If the error already has one of our friendly or validation messages, use it directly.
+  if (
+    error?.message &&
+    (Object.values(ERROR_MESSAGES).includes(error.message) ||
+      Object.values(VALIDATION_MESSAGES).includes(error.message))
+  ) {
     return error.message;
   }
 
@@ -111,8 +115,14 @@ export function getFriendlyErrorMessage(error) {
 export async function fetchWordDefinition(word) {
   // The API word must be trimmed and lowercase before being requested.
   const normalizedWord = normalizeSearchWord(word);
+  const validationMessage = validateSearchInput(normalizedWord);
 
   try {
+    // Service-level validation protects every API request, including searches started outside the main input.
+    if (validationMessage) {
+      throw createDictionaryError(validationMessage);
+    }
+
     // This sends the GET request to /{word}, such as /hello.
     const response = await api.get(`/${encodeURIComponent(normalizedWord)}`);
     const data = response?.data;
